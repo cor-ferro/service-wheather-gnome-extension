@@ -1,0 +1,6 @@
+{
+    "name": "Wheather Service", 
+    "description": "wheather service", 
+    "uuid": "wheather-service@thereissuchname.yandex.ru", 
+    "shell-version": ["3.30.1"]
+}
