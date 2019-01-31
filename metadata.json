@@ -1,6 +1,1 @@
-{
-    "name": "Wheather Service", 
-    "description": "wheather service", 
-    "uuid": "wheather-service@thereissuchname.yandex.ru", 
-    "shell-version": ["3.30.1"]
-}
+{"name": "Wheather Indicator", "description": "wheather indicator", "uuid": "Wheather_Indicator@thereissuchname.yandex.ru", "shell-version": ["3.30.1"]}
