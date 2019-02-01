@@ -9,42 +9,49 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Soup = imports.gi.Soup;
 const Mainloop = imports.mainloop;
-const ModalDialog = imports.ui.modalDialog;
 
-let text, button;
+const DAY_MAP = {
+    0: 'воскресенье',
+    1: 'понедельник',
+    2: 'вторник',
+    3: 'среда',
+    4: 'четверг',
+    5: 'пятница',
+    6: 'суббота'
+}; 
 
-const WheatherMenu = new Lang.Class({
-    Name: 'WheatherMenu',
-    Extends: PopupMenu.PopupSubMenuMenuItem,
+const MONTH_MAP = {
+    0: 'январь',
+    1: 'февраль',
+    2: 'март',
+    3: 'апрель',
+    4: 'май',
+    5: 'июнь',
+    6: 'июль',
+    7: 'август',
+    8: 'сентябрь',
+    9: 'октябрь',
+    10: 'ноябрь',
+    11: 'декабрь',
+}; 
 
-    _init() {
-        // this.parent({
-        //     destroyOnClose: true
-        // });
-
-        // this._dialogLayout = 
-        //     typeof this.dialogLayout === "undefined"
-        //     ? this._dialogLayout
-        //     : this.dialogLayout;
-
-        // this._dialogLayout.set_style_class_name('');
-        // this._dialogLayout.set_margin_bottom(300);
-        // this.contentLayout.set_style_class_name('wheather-dialog');
-
-        // this.testLabel = new St.Label({
-        //     style_class: 'wheather-label',
-        //     text: 'test label'
-        // });
-
-        // this.contentLayout.add(this.testLabel);
-
-        // this._dialogLayout.set_width(200);
-        // this._dialogLayout.set_height(200);
-
-        // Main.panel._rightBox.insert_child_at_index(this.contentLayout, 0);
+function printObject(obj) {
+    if (!obj) {
+        return;
     }
-});
-    
+
+    global.log(`${obj.constructor.name} ----------`);
+    const props = [];
+    for (var i in obj) {
+        props.push(i);
+    }
+
+    props.sort();
+    props.forEach((prop) => {
+        global.log(prop);
+    });
+    global.log('----------');
+}
 
 let _httpSession;
 const WheatherIndicator = new Lang.Class({
@@ -60,48 +67,54 @@ const WheatherIndicator = new Lang.Class({
         this.actor.add_actor(this.buttonText);
         this._refresh();
 
-        this.wheatherMenu = new WheatherMenu();
-        
-        let popupMenuExpander = new PopupMenu.PopupSubMenuMenuItem('PopupSubMenuMenuItem');
-
-		// This is an example of PopupMenuItem, a menu item. We will use this to add as a submenu
-		let submenu = new PopupMenu.PopupMenuItem('PopupMenuItem');
-
-		// A new label
-		let label = new St.Label({text:'Item 1'});
-
-		// Add the label and submenu to the menu expander
-		popupMenuExpander.menu.addMenuItem(submenu);
-		popupMenuExpander.menu.box.add(label);
-		
-		// The CSS from our file is automatically imported
-		// You can add custom styles like this
-		// REMOVE THIS AND SEE WHAT HAPPENS
-        popupMenuExpander.menu.box.style_class = 'PopupSubMenuMenuItemStyle';
-        popupMenuExpander.menu.box.set_width(500);
-		
-		// Other standard menu items
-		let menuitem = new PopupMenu.PopupMenuItem('PopupMenuItem');
-		let switchmenuitem = new PopupMenu.PopupSwitchMenuItem('PopupSwitchMenuItem');
-		let imagemenuitem = new PopupMenu.PopupImageMenuItem('PopupImageMenuItem', 'system-search-symbolic');		
-
-		// Assemble all menu items
-		this.menu.addMenuItem(popupMenuExpander);
-		// This is a menu separator
-		this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-		this.menu.addMenuItem(menuitem);
-		this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-		this.menu.addMenuItem(switchmenuitem);
-		this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this.menu.addMenuItem(imagemenuitem);
-        
-        
+        this.wheather = {};
 
         this.actor.connect('button-press-event', () => {
-            global.log('open wheather menu');
-            // this.wheatherMenu.open();
-        });
-        
+            const FORECAST_DAY_WIDTH = 120;
+
+            this.menu.removeAll();
+
+            if (this.wheather.forecast && this.wheather.forecast.length > 0) {
+                // this.menu.box.set_width(FORECAST_DAY_WIDTH * this.wheather.forecast.length);
+
+                let popupMenuExpander = new PopupMenu.PopupSubMenuMenuItem(`Прогноз на ${this.wheather.forecast.length} дней`);
+
+                printObject(Clutter.ActorAlign);
+
+                const wrapper = new St.BoxLayout();
+                wrapper.set_vertical(true);
+
+                this.wheather.forecast.forEach((forecast) => {
+                    const date = new Date(forecast.timestamp);
+                    const dayTemp = forecast.day.temp;
+                    const nightTemp = forecast.night.temp;
+
+                    const labelDay = new St.Label({text: `${DAY_MAP[date.getDay()]}`, style_class: 'forecast-day-label'});
+                    const labelDate = new St.Label({text: `${MONTH_MAP[date.getMonth()]}, ${date.getDate()}`, style_class: 'forecast-day-date'});
+                    const labelDayTemp = new St.Label({text: `днём:    ${dayTemp}`, style_class: 'forecast-day-day-temp'});
+                    const labelNightTemp = new St.Label({text: `ночью: ${nightTemp}`, style_class: 'forecast-day-night-temp'});
+
+                    const box = new St.BoxLayout();
+
+                    box.set_vertical(true);
+                    box.set_width(FORECAST_DAY_WIDTH);
+                    box.set_height(80);
+                    box.set_style_class_name('forecast-box');
+                    box.add(labelDay);
+                    box.add(labelDate);
+                    box.add(labelDayTemp);
+                    box.add(labelNightTemp);
+
+                    wrapper.add(box);
+                });
+
+                popupMenuExpander.menu.box.add(wrapper);
+
+                this.menu.addMenuItem(popupMenuExpander);
+            }
+            
+            this.menu.open()
+        }); 
     },
 
     _refresh() {
@@ -118,7 +131,6 @@ const WheatherIndicator = new Lang.Class({
 
         let message = Soup.form_request_new_from_hash('GET', 'http://127.0.0.1:49160/actual', {});
 
-        // execute the request and define the callback
         _httpSession.queue_message(message, (_httpSession, message) => {
             global.log("queue_message loadWheather");
 
@@ -127,7 +139,8 @@ const WheatherIndicator = new Lang.Class({
             }
 
             let json = JSON.parse(message.response_body.data);
-            // do something with the data
+
+            this.wheather = json;
 
             this._refreshUI(json);
         });
@@ -163,7 +176,7 @@ function init() {
 
 function enable() {
     wheatherMenu = new WheatherIndicator();
-	Main.panel.addToStatusArea('tw-indicator', wheatherMenu);
+	Main.panel.addToStatusArea('wheather-indicator', wheatherMenu);
 }
 
 function disable() {
