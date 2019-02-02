@@ -129,7 +129,10 @@ const WheatherIndicator = new Lang.Class({
 
         _httpSession = new Soup.Session();
 
-        let message = Soup.form_request_new_from_hash('GET', 'http://127.0.0.1:49160/actual', {});
+        const lat = '59.943688';
+        const lon = '30.351207';
+
+        let message = Soup.form_request_new_from_hash('GET', `http://127.0.0.1:49160/get`, {lat, lon});
 
         _httpSession.queue_message(message, (_httpSession, message) => {
             global.log("queue_message loadWheather");
