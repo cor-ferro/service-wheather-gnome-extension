@@ -1,3 +1,27 @@
 .forecast-day-label {
     color: rgb(128, 128, 128);
+    font-size: 12px;
+}
+
+.forecast-day-date {
+    color: rgb(170, 170, 170);
+    font-size: 30px;
+}
+
+.forecast-day-day-temp-label {
+    font-size: 14px;
+}
+
+.forecast-day-day-temp-value  {
+    font-size: 16px;
+}
+
+.forecast-day-night-temp-label {
+    font-size: 14px;
+    color: rgb(150, 150, 150);
+}
+
+.forecast-day-night-temp-value {
+    font-size: 15px;
+    color: rgb(150, 150, 150);
 }

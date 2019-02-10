@@ -61,7 +61,7 @@ const WheatherIndicator = new Lang.Class({
     _init() {
         this.parent(0.0, "Wheather Indicator", false);
         this.buttonText = new St.Label({
-            text: _("Loading..."),
+            text: _("загрузка..."),
             y_align: Clutter.ActorAlign.CENTER
         });
         this.actor.add_actor(this.buttonText);
@@ -89,32 +89,83 @@ const WheatherIndicator = new Lang.Class({
                     const dayTemp = forecast.day.temp;
                     const nightTemp = forecast.night.temp;
 
-                    const labelDay = new St.Label({text: `${DAY_MAP[date.getDay()]}`, style_class: 'forecast-day-label'});
-                    const labelDate = new St.Label({text: `${MONTH_MAP[date.getMonth()]}, ${date.getDate()}`, style_class: 'forecast-day-date'});
-                    const labelDayTemp = new St.Label({text: `днём:    ${dayTemp}`, style_class: 'forecast-day-day-temp'});
-                    const labelNightTemp = new St.Label({text: `ночью: ${nightTemp}`, style_class: 'forecast-day-night-temp'});
-
                     const box = new St.BoxLayout();
+
+                    const dayTempBox = new St.BoxLayout();
+                    const dayTempLabelBox = new St.BoxLayout();
+                    const dayTempValueBox = new St.BoxLayout();
+
+                    dayTempLabelBox.set_width(60);
+                    dayTempLabelBox.add(new St.Label({text: `днём:`, style_class: 'forecast-day-day-temp-label'}))
+
+                    dayTempValueBox.add(new St.Label({text: `${this.formatTemp(dayTemp)}`, style_class: 'forecast-day-day-temp-value'}))
+                    
+                    dayTempBox.set_vertical(false);
+                    dayTempBox.add(dayTempLabelBox);
+                    dayTempBox.add(dayTempValueBox);
+
+                    const nightTempBox = new St.BoxLayout();
+                    const nightTempLabelBox = new St.BoxLayout();
+                    const nightTempValueBox = new St.BoxLayout();
+
+                    nightTempLabelBox.set_width(60);
+                    nightTempLabelBox.add(new St.Label({text: `ночью:`, style_class: 'forecast-day-night-temp-label'}))
+                    nightTempValueBox.add(new St.Label({text: `${this.formatTemp(nightTemp)}`, style_class: 'forecast-day-night-temp-value'}))
+
+                    nightTempBox.set_vertical(false);
+                    nightTempBox.add(nightTempLabelBox);
+                    nightTempBox.add(nightTempValueBox);
+
+                    const rightColumn = new St.BoxLayout();
+                    rightColumn.set_vertical(true);
+                    rightColumn.add(
+                        new St.Label({text: `${DAY_MAP[date.getDay()]}, ${MONTH_MAP[date.getMonth()]}`, style_class: 'forecast-day-label'})
+                    );
+                    rightColumn.add(
+                        dayTempBox
+                    );
+                    rightColumn.add(
+                        nightTempBox
+                    );
+
+                    const firstLineBox = new St.BoxLayout();
+                    firstLineBox.set_vertical(false);
+                    firstLineBox.add(
+                        new St.Label({text: `${date.getDate()} `, style_class: 'forecast-day-date'})
+                    )
+                    firstLineBox.add(
+                        rightColumn
+                    );
 
                     box.set_vertical(true);
                     box.set_width(FORECAST_DAY_WIDTH);
-                    box.set_height(80);
+                    box.set_height(75);
                     box.set_style_class_name('forecast-box');
-                    box.add(labelDay);
-                    box.add(labelDate);
-                    box.add(labelDayTemp);
-                    box.add(labelNightTemp);
+                    box.add(
+                        firstLineBox
+                    );
+
 
                     wrapper.add(box);
                 });
 
                 popupMenuExpander.menu.box.add(wrapper);
 
+                this.menu.addMenuItem(new PopupMenu.PopupMenuItem(`${this.wheather.location}, ${this.formatTemp(this.wheather.fact.temp)}\n\nветер:               ${this.wheather.fact.windSpeed};\nвлажность:   ${this.wheather.fact.humidity}`));
+                this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
                 this.menu.addMenuItem(popupMenuExpander);
             }
             
             this.menu.open()
         }); 
+    },
+
+    formatTemp(value) {
+        if (value < 0 || value > 0) {
+            return `${value}°`;
+        } else {
+            return `0`;
+        }
     },
 
     _refresh() {
@@ -150,7 +201,7 @@ const WheatherIndicator = new Lang.Class({
     },
 
     _refreshUI(data) {
-        const txt = `${data.fact.temp} (${data.feeling.temp})`;
+        const txt = `[ ${data.location}: ${this.formatTemp(data.fact.temp)} (${this.formatTemp(data.feeling.temp)}) ]`;
         this.buttonText.set_text(txt);
     },
 
