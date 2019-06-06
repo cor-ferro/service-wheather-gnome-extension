@@ -33,25 +33,7 @@ const MONTH_MAP = {
     9: 'октябрь',
     10: 'ноябрь',
     11: 'декабрь',
-}; 
-
-function printObject(obj) {
-    if (!obj) {
-        return;
-    }
-
-    global.log(`${obj.constructor.name} ----------`);
-    const props = [];
-    for (var i in obj) {
-        props.push(i);
-    }
-
-    props.sort();
-    props.forEach((prop) => {
-        global.log(prop);
-    });
-    global.log('----------');
-}
+};
 
 let _httpSession;
 const WheatherIndicator = new Lang.Class({
@@ -75,17 +57,13 @@ const WheatherIndicator = new Lang.Class({
             this.menu.removeAll();
 
             if (this.wheather.forecast && this.wheather.forecast.length > 0) {
-                // this.menu.box.set_width(FORECAST_DAY_WIDTH * this.wheather.forecast.length);
-
                 let popupMenuExpander = new PopupMenu.PopupSubMenuMenuItem(`Прогноз на ${this.wheather.forecast.length} дней`);
-
-                printObject(Clutter.ActorAlign);
 
                 const wrapper = new St.BoxLayout();
                 wrapper.set_vertical(true);
 
                 this.wheather.forecast.forEach((forecast) => {
-                    const date = new Date(forecast.timestamp);
+                    const date = new Date(forecast.dateTime);
                     const dayTemp = forecast.day.temp;
                     const nightTemp = forecast.night.temp;
 
